@@ -1,5 +1,445 @@
-tmp/*
-config/database.php
-app/tmp/*
-app/config/database.php
-!empty
+<?php
+  if (!defined("_VALID_PHP"))
+      die('Direct access to this location is not allowed.');
+  
+  if(!$user->getAcl("android")): print $core->msgAlert(_CG_ONLYADMIN, false); return; endif;
+  
+  require_once("lang/" . $core->language . ".lang.php");
+  require_once("admin_class.php");
+  $android = new Android();
+?>
+<?php switch($core->maction): case "configure": ?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE4;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO4 . _REQ1 . required() . _REQ2;?></p>
+<h2><span style="font-size:12px">v. <?php echo $android->ver;?></span><?php echo MOD_DS_SUBTITLE4;?></h2>
+<form action="" method="post" id="admin_form" name="admin_form" enctype="multipart/form-data">
+  <table cellspacing="0" cellpadding="0" class="formtable">
+    <tr>
+      <td width="200"><?php echo MOD_DS_THUMB_W_H;?>: <?php echo required();?></td>
+      <td><input name="thumb_w" type="text" value="<?php echo $android->thumb_w;?>" class="inputbox" size="5"/>
+        x
+        <input name="thumb_h" type="text" value="<?php echo $android->thumb_h;?>" class="inputbox" size="5"/>
+        <?php echo tooltip(MOD_DS_THUMB_W_H_T);?></td>
+    </tr>
+    <tr>
+      <td ><?php echo MOD_DS_FILEDIR;?>: <?php echo required();?></td>
+      <td><input name="filedir" type="text" class="inputbox" value="<?php echo $android->filedir;?>" size="55"/>
+        <?php echo tooltip(MOD_DS_FILEDIR_T);?></td>
+    </tr>
+    <tr>
+      <td ><?php echo MOD_DS_URLTTL;?>: <?php echo required();?></td>
+      <td><input name="utl_time" type="text" value="<?php echo $android->utl_time;?>" class="inputbox" size="5"/>
+        <?php echo tooltip(MOD_DS_URLTTL_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_IS_FREE;?>:</td>
+      <td><span class="input-out"><?php echo _YES;?>
+        <input name="allow_free" type="radio" value="y" <?php getChecked($android->allow_free, "y"); ?> />
+        <?php echo _NO;?>
+        <input name="allow_free" type="radio" value="n"  <?php getChecked($android->allow_free, "n"); ?>/>
+        <?php echo tooltip(MOD_DS_IS_FREE_T);?></span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_LATEST;?>:</td>
+      <td><input name="latest" type="text" value="<?php echo $android->latest;?>" class="inputbox" size="5"/>
+      <?php echo tooltip(MOD_DS_LATEST_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_COL;?>:</td>
+      <td><input name="cols" type="text" value="<?php echo $android->cols;?>" class="inputbox" size="5"/>
+      <?php echo tooltip(MOD_DS_COL_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_LAYOUT;?>:</td>
+      <td><span class="input-out"><?php echo MOD_DS_GRID_W;?>
+        <input name="layout" type="radio" value="1" <?php getChecked($android->layout, 1); ?> />
+        <?php echo MOD_DS_LIST_W;?>
+        <input name="layout" type="radio" value="0"  <?php getChecked($android->layout, 0); ?>/>
+        </span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_TEMPLATE;?>:</td>
+      <td class="editor"><textarea id="body_content" name="template" rows="4" cols="30"><?php echo $android->template;?></textarea>
+        <?php loadEditor("body_content"); ?>
+        <strong><?php echo _ET_VAR_T;?></strong></td>
+    </tr>
+    <tr>
+      <td><input type="submit" name="doproduct" class="button" value="<?php echo MOD_DS_CFGUPDATE;?>" /></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android" class="button-alt"> <?php echo _CANCEL;?></a></td>
+    </tr>
+  </table>
+</form>
+<?php echo $core->doForm("processConfig","modules/android/controller.php");?>
+<?php break;?>
+<?php case"category": ?>
+<?php include('modules/android/category.php');?>
+<?php break;?>
+<?php case"catedit": ?>
+<?php $row = $core->getRowById("mod_android_categories", $android->cid);?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE6;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO6 . _REQ1 . required() . _REQ2;?></p>
+<h2><?php echo MOD_DS_SUBTITLE6 . $row['name'.$core->dblang];?></h2>
+<form action="" method="post" id="admin_form" name="admin_form">
+  <table cellspacing="0" cellpadding="0" class="formtable">
+    <tr>
+      <td width="200"><?php echo MOD_DS_CATNAME;?>: <?php echo required();?></td>
+      <td><input name="name<?php echo $core->dblang;?>" type="text" value="<?php echo $row['name'.$core->dblang];?>" class="inputbox" size="55"/></td>
+    </tr>
+    <tr>
+      <td><input type="submit" name="submit" class="button" value="<?php echo MOD_DS_UDTC;?>" /></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=category" class="button-alt"> <?php echo _CANCEL;?></a></td>
+    </tr>
+  </table>
+  <input name="cid" type="hidden" value="<?php echo $android->cid;?>" />
+</form>
+<?php echo $core->doForm("processCategory","modules/android/controller.php");?>
+<?php break;?>
+<?php case"catadd": ?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE7;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO7 . _REQ1 . required() . _REQ2;?></p>
+<h2><?php echo MOD_DS_SUBTITLE7;?></h2>
+<form action="" method="post" id="admin_form" name="admin_form">
+  <table cellspacing="0" cellpadding="0" class="formtable">
+    <tr>
+      <td width="200"><?php echo MOD_DS_CATNAME;?>: <?php echo required();?></td>
+      <td><input name="name<?php echo $core->dblang;?>" type="text"  class="inputbox" size="55"/></td>
+    </tr>
+    <tr>
+      <td><input type="submit" name="submit" class="button" value="<?php echo MOD_DS_ADDC;?>" /></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=category" class="button-alt"> <?php echo _CANCEL;?></a></td>
+    </tr>
+  </table>
+</form>
+<?php echo $core->doForm("processCategory","modules/android/controller.php");?>
+<?php break;?>
+<?php case"transactions": ?>
+<?php $transrow = $android->getPayments();?>
+<?php include('modules/android/transactions.php');?>
+<?php break;?>
+<?php case"edit": ?>
+<?php $row = $core->getRowById("mod_android", $android->digiid);?>
+<?php $catrow = $android->getCategories();?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE2;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO2 . _REQ1 . required() . _REQ2;?></p>
+<h2><?php echo MOD_DS_SUBTITLE2 . $row['title'.$core->dblang];?></h2>
+<form action="" method="post" id="admin_form" name="admin_form" enctype="multipart/form-data">
+  <table cellspacing="0" cellpadding="0" class="formtable">
+    <tr>
+      <td width="200"><?php echo MOD_DS_NAME;?>: <?php echo required();?></td>
+      <td><input name="title<?php echo $core->dblang;?>" type="text" value="<?php echo $row['title'.$core->dblang];?>" class="inputbox" size="55"/></td>
+    </tr>
+    <tr>
+      <td ><?php echo MOD_DS_SLUG;?>: <?php echo required();?></td>
+      <td><input name="slug" type="text" class="inputbox" value="<?php echo $row['slug'];?>" size="55"/>
+        <?php echo tooltip(MOD_DS_SLUG_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_CATEGORY;?>: <?php echo required();?></td>
+      <td><select name="cid" class="custombox" style="width:200px">
+          <option value=""><?php echo MOD_DS_CATEGORY_SEL;?></option>
+          <?php if($catrow):?>
+          <?php foreach($catrow as $crow):?>
+          <?php $sel = ($crow['id'] == $row['cid']) ? ' selected="selected"' : '' ;?>
+          <option value="<?php echo $crow['id'];?>"<?php echo $sel;?>><?php echo $crow['name'.$core->dblang];?></option>
+          <?php endforeach;?>
+          <?php unset($crow);?>
+          <?php endif;?>
+        </select></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODPRICE;?>: <?php echo required();?></td>
+      <td><input name="price" type="text"  class="inputbox" value="<?php echo $row['price'];?>" size="10" />
+        <?php echo tooltip(MOD_DS_PRODPRICE_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_MEMBERSHIP;?>:</td>
+      <td><?php echo $android->getMembershipList($row['membership_id']);?><br />
+        <small><strong><?php echo MOD_DS_MEMBERSHIP_N;?></strong></small></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODIMG;?>: <?php echo required();?></td>
+      <td><input name="thumb" type="file" size="40" class="fileinput mask" />
+        <span style="margin-left:80px"><?php echo tooltip(MOD_DS_PRODIMG_T);?></span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODFILE;?>: <?php echo required();?></td>
+      <td><input name="filename" type="file" size="40" class="fileinput mask" />
+        <span style="margin-left:80px"><?php echo tooltip(MOD_DS_PRODFILE_T);?></span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PUBLISHED;?>:</td>
+      <td><span class="input-out"><?php echo _YES;?>
+        <input name="active" type="radio" value="1" <?php getChecked($row['active'], 1); ?> />
+        <?php echo _NO;?>
+        <input name="active" type="radio" value="0"  <?php getChecked($row['active'], 0); ?>/>
+        </span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODDESC;?>:</td>
+      <td class="editor"><textarea id="body_content" name="body<?php echo $core->dblang;?>" rows="4" cols="30"><?php echo $core->out_url($row['body'.$core->dblang]);?></textarea>
+        <?php loadEditor("body_content"); ?></td>
+    </tr>
+    <tr>
+      <td><?php echo _METAKEYS;?>:</td>
+      <td><input name="metakey<?php echo $core->dblang;?>" type="text" value="<?php echo $row['metakey'.$core->dblang];?>" class="inputbox" size="45"  />
+      <?php echo tooltip(_CG_METAKEY_T);?></td>
+    </tr>      <tr>
+      <td><?php echo _METADESC;?>:</td>
+      <td><textarea name="metadesc<?php echo $core->dblang;?>" cols="60" rows="5" class="inputbox"><?php echo $row['metadesc'.$core->dblang];?></textarea>
+        <?php echo tooltip(_CG_METADESC_T);?></td>
+    </tr>
+    <tr>
+      <td><input type="submit" name="doproduct" class="button" value="<?php echo MOD_DS_UDT;?>" /></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android" class="button-alt"> <?php echo _CANCEL;?></a></td>
+    </tr>
+  </table>
+  <input name="digiid" type="hidden" value="<?php echo $android->digiid;?>" />
+</form>
+<?php echo $core->doForm("processProduct","modules/android/controller.php");?> 
+<script type="text/javascript">
+  $(".mask").filestyle({ 
+    image: "images/file-button.png",
+	  imageheight : 29,
+	  imagewidth : 75,
+	  width : 230
+  });
+</script>
+<?php break;?>
+<?php case"add": ?>
+<?php $catrow = $android->getCategories();?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE3;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO3 . _REQ1 . required() . _REQ2;?></p>
+<h2><?php echo MOD_DS_SUBTITLE3;?></h2>
+<form action="" method="post" id="admin_form" name="admin_form" enctype="multipart/form-data">
+  <table cellspacing="0" cellpadding="0" class="formtable">
+    <tr>
+      <td width="200"><?php echo MOD_DS_NAME;?>: <?php echo required();?></td>
+      <td><input name="title<?php echo $core->dblang;?>" type="text" class="inputbox" size="55"/></td>
+    </tr>
+    <tr>
+      <td ><?php echo MOD_DS_SLUG;?>: <?php echo required();?></td>
+      <td><input name="slug" type="text" class="inputbox" size="55"/>
+        <?php echo tooltip(MOD_DS_SLUG_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_CATEGORY;?>: <?php echo required();?></td>
+      <td><select name="cid" class="custombox" style="width:200px">
+          <option value=""><?php echo MOD_DS_CATEGORY_SEL;?></option>
+          <?php if($catrow):?>
+          <?php foreach($catrow as $crow):?>
+          <option value="<?php echo $crow['id'];?>"><?php echo $crow['name'.$core->dblang];?></option>
+          <?php endforeach;?>
+          <?php unset($crow);?>
+          <?php endif;?>
+        </select></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODPRICE;?>: <?php echo required();?></td>
+      <td><input name="price" type="text"  class="inputbox" size="10" />
+        <?php echo tooltip(MOD_DS_PRODPRICE_T);?></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_MEMBERSHIP;?>:</td>
+      <td><?php echo $android->getMembershipList();?><br />
+        <small><strong><?php echo MOD_DS_MEMBERSHIP_N;?></strong></small></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODIMG;?>: <?php echo required();?></td>
+      <td><input name="thumb" type="file" size="40" class="fileinput mask" />
+        <span style="margin-left:80px"><?php echo tooltip(MOD_DS_PRODIMG_T);?></span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODFILE;?>: <?php echo required();?></td>
+      <td><input name="filename" type="file" size="40" class="fileinput mask" />
+        <span style="margin-left:80px"><?php echo tooltip(MOD_DS_PRODFILE_T);?></span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PUBLISHED;?>:</td>
+      <td><span class="input-out"><?php echo _YES;?>
+        <input name="active" type="radio" value="1" checked="checked" />
+        <?php echo _NO;?>
+        <input name="active" type="radio" value="0"  />
+        </span></td>
+    </tr>
+    <tr>
+      <td><?php echo MOD_DS_PRODDESC;?>:</td>
+      <td class="editor"><textarea id="body_content" name="body<?php echo $core->dblang;?>" rows="4" cols="30"></textarea>
+        <?php loadEditor("body_content"); ?></td>
+    </tr>
+    <tr>
+      <td><?php echo _METAKEYS;?>:</td>
+      <td><input name="metakey<?php echo $core->dblang;?>" type="text" class="inputbox" size="45"  />
+      <?php echo tooltip(_CG_METAKEY_T);?></td>
+    </tr>      <tr>
+      <td><?php echo _METADESC;?>:</td>
+      <td><textarea name="metadesc<?php echo $core->dblang;?>" cols="60" rows="5" class="inputbox"></textarea>
+        <?php echo tooltip(_CG_METADESC_T);?></td>
+    </tr>
+    <tr>
+      <td><input type="submit" name="doproduct" class="button" value="<?php echo MOD_DS_ADD;?>" /></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android" class="button-alt"> <?php echo _CANCEL;?></a></td>
+    </tr>
+  </table>
+</form>
+<?php echo $core->doForm("processProduct","modules/android/controller.php");?> 
+<script type="text/javascript">
+  $(".mask").filestyle({ 
+	  image: "images/file-button.png",
+	  imageheight : 29,
+	  imagewidth : 75,
+	  width : 230
+  });
+</script>
+<?php break;?>
+<?php default: ?>
+<?php $prodrow = $android->getProducts();?>
+<?php $catrow = $android->getCategories();?>
+<h1><img src="images/mod-sml.png" alt="" /><?php echo MOD_DS_TITLE1;?></h1>
+<p class="info"><span><?php echo $core->langIcon();?></span><?php echo MOD_DS_INFO1;?></p>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td nowrap="nowrap"><h2><?php echo MOD_DS_SUBTITLE1 . $content->getModuleName(get("mod"));?></h2></td>
+    <td align="right" style="width:100%"><div class="menu-switch" style="margin-top:2px">
+        <ul class="nav_top">
+          <li><a href="javascript:void(0);" class="change"><?php echo MOD_DS_PRODMENU;?></a>
+            <ul>
+              <li><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=add"><?php echo MOD_DS_ADDNEW;?></a></li>
+              <li><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=category"><?php echo MOD_DS_MANAGE_CAT;?></a></li>
+              <li><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=transactions"><?php echo MOD_DS_VIEWTRANS;?></a></li>
+              <li><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=configure"><?php echo MOD_DS_MAN_CONFIG;?></a></li>
+            </ul>
+          </li>
+        </ul>
+      </div></td>
+    <td align="right" nowrap="nowrap"><select class="custombox" name="cid" style="width:220px" onchange="if(this.value!='NA') window.location='index.php?do=modules&amp;action=config&amp;mod=android&amp;cid='+this[this.selectedIndex].value; else window.location='index.php?do=modules&amp;action=config&amp;mod=android';" id="cat_id">
+        <option value="NA"><?php echo MOD_DS_FILTER_RESET;?></option>
+        <?php if($catrow):?>
+        <?php foreach($catrow as $crow):?>
+        <?php $sel = ($crow['id'] == intval(get('cid'))) ? ' selected="selected"' : '' ;?>
+        <option value="<?php echo $crow['id'];?>"<?php echo $sel;?>><?php echo $crow['name'.$core->dblang];?></option>
+        <?php endforeach;?>
+        <?php unset($crow);?>
+        <?php endif;?>
+      </select></td>
+  </tr>
+</table>
+<table cellpadding="0" cellspacing="0" class="display">
+  <thead>
+    <tr>
+      <th width="20" class="left">#</th>
+      <th class="left"><?php echo MOD_DS_NAME;?></th>
+      <th class="left"><?php echo MOD_DS_CATEGORY;?></th>
+      <th><?php echo MOD_DS_SALES;?></th>
+      <th><?php echo MOD_DS_PRICE;?></th>
+      <th><?php echo _EDIT;?></th>
+      <th><?php echo _DELETE;?></th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php if(!$prodrow):?>
+    <tr>
+      <td colspan="7"><?php echo $core->msgAlert(MOD_DS_NOPRODUCTS,false);?></td>
+    </tr>
+    <?php else:?>
+    <?php foreach ($prodrow as $row):?>
+    <tr>
+      <td><?php echo $row['id'];?>.</td>
+      <td><?php echo $row['title'.$core->dblang];?></td>
+      <td><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=catedit&amp;cid=<?php echo $row['cid'];?>"><?php echo $row['catname'];?></a></td>
+      <td align="center"><?php echo $row['sales'];?></td>
+      <td align="center"><?php echo $core->formatMoney($row['price']);?></td>
+      <td align="center"><a href="index.php?do=modules&amp;action=config&amp;mod=android&amp;mod_action=edit&amp;digiid=<?php echo $row['id'];?>"><img src="images/edit.png" class="tooltip"  alt="" title="<?php echo _EDIT;?>"/></a></td>
+      <td align="center"><a href="javascript:void(0);" class="delete" rel="<?php echo $row['title'.$core->dblang];?>" id="item_<?php echo $row['id'];?>"><img src="images/delete.png" class="tooltip"  alt="" title="<?php echo _DELETE;?>"/></a></td>
+    </tr>
+    <?php endforeach;?>
+    <?php unset($row);?>
+    <?php if($pager->items_total > $pager->items_per_page):?>
+    <tr style="background-color:transparent">
+      <td colspan="7" style="padding:10px;"><div class="pagination"><span class="inner"><?php echo $pager->display_pages();?></span></div></td>
+    </tr>
+    <?php endif;?>
+    <?php endif;?>
+  </tbody>
+</table>
+<div id="dialog-confirm" style="display:none;" title="<?php echo _DELETE.' '.MOD_DS_PRODUCT;?>">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><?php echo _DEL_CONFIRM;?></p>
+</div>
+<script type="text/javascript">
+// <![CDATA[
+$(document).ready(function() {
+    $('a.delete').live('click', function () {
+        var id = $(this).attr('id').replace('item_', '')
+        var parent = $(this).parent().parent();
+		var title = $(this).attr('rel');
+        $("#dialog-confirm").data({
+            'delid': id,
+            'parent': parent,
+			'title': title
+        }).dialog('open');
+        return false;
+    });
+
+    $("#dialog-confirm").dialog({
+        resizable: false,
+        bgiframe: true,
+        autoOpen: false,
+        width: 400,
+        height: "auto",
+        zindex: 9998,
+        modal: false,
+        buttons: {
+            '<?php echo _DELETE;?>': function () {
+                var parent = $(this).data('parent');
+                var id = $(this).data('delid');
+				var title = $(this).data('title');
+
+                $.ajax({
+                    type: 'post',
+                    url: "modules/android/controller.php",
+                    data: 'deleteProduct=' + id + '&prodtitle=' + title,
+                    beforeSend: function () {
+                        parent.animate({
+                            'backgroundColor': '#FFBFBF'
+                        }, 400);
+                    },
+                    success: function (msg) {
+                        parent.fadeOut(400, function () {
+                            parent.remove();
+                        });
+						$("html, body").animate({scrollTop:0}, 600);
+						$("#msgholder").html(msg);
+                    }
+                });
+
+                $(this).dialog('close');
+            },
+            '<?php echo _CANCEL;?>': function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+	
+  $('ul.nav_top > li').hover(function() {
+	$('a.change').html('<?php echo MOD_DS_ACTION;?>');
+    $('ul:first', this).show();
+  },
+  function() {
+	$('a.change').html('<?php echo MOD_DS_PRODMENU;?>');
+    $('ul:first', this).hide();
+  });
+
+  $('ul.nav_top li li').hover(function() {
+    $('ul:first', this).each(function() {
+      $(this).css('top', $(this).parent().position().top );
+      $(this).css('left', $(this).parent().position().left + $(this).parent().width() );
+      $(this).show();
+    });
+  },
+  function() {
+    $('ul:first', this).hide();
+  });
+});
+// ]]>
+</script>
+<?php break;?>
+<?php endswitch;?>
